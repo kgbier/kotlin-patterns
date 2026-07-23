@@ -1,4 +1,4 @@
-package dev.kgbier.patterns.sample
+package dev.kgbier.patterns.sample.repo
 
 import dev.kgbier.patterns.xstore.Reducer
 import dev.kgbier.patterns.xstore.XStore

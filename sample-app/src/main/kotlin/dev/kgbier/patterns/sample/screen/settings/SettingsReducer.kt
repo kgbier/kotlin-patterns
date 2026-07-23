@@ -5,7 +5,7 @@ import dev.kgbier.patterns.xstore.Reducer
 object SettingsReducer : Reducer<SettingsState, SettingsAction> {
     override fun invoke(
         state: SettingsState,
-        action: SettingsAction
+        action: SettingsAction,
     ): SettingsState = when (action) {
         is SettingsAction.ReceiveRemoteSettings -> state.copy(remoteSettings = action.settings)
 
@@ -16,10 +16,9 @@ object SettingsReducer : Reducer<SettingsState, SettingsAction> {
             )
         )
 
-        SettingsAction.ToggleWidget -> state.copy(
+        is SettingsAction.ToggleWidget -> state.copy(
             localSettings = state.localSettings.copy(
-                isWidgetEnabled = !(state.localSettings.isWidgetEnabled
-                    ?: state.remoteSettings.isWidgetEnabled)
+                isWidgetEnabled = action.enabled,
             )
         )
 
@@ -30,15 +29,19 @@ object SettingsReducer : Reducer<SettingsState, SettingsAction> {
             )
         )
 
-        SettingsAction.ToggleGizmo -> {
-            state.copy(
-                localSettings = state.localSettings.copy(
-                    isGizmoEnabled = !(state.localSettings.isGizmoEnabled
-                        ?: state.remoteSettings.isGizmoEnabled)
-                )
+        is SettingsAction.UpdateFlam -> state.copy(
+            localSettings = state.localSettings.copy(
+                flamString = action.string
             )
-        }
+        )
 
-        is SettingsAction.UpdateFlam -> state
+        SettingsAction.ToggleGizmo -> state.copy(
+            localSettings = state.localSettings.copy(
+                isGizmoEnabled = !(state.localSettings.isGizmoEnabled
+                    ?: state.remoteSettings.isGizmoEnabled)
+            )
+        )
+
+        SettingsAction.AcceptGizmoTerms -> state.copy(areGizmoTermsAgreed = true)
     }
 }

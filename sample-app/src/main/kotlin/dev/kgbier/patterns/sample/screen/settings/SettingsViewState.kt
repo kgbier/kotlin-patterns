@@ -18,4 +18,3 @@ data class SettingsViewState(
             get() = this is Enabled
     }
 }
-
