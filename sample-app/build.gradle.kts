@@ -26,13 +26,13 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.compose)
 
-    val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
+    val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.bundles.androidx.compose)
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
