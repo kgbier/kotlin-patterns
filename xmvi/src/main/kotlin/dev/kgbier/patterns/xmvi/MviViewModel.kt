@@ -75,7 +75,7 @@ class DefaultMviViewModel<
     debugIdentifier: String? = null,
 ) : MviViewModel<TIntent, TViewState> {
 
-    val store = DefaultXStore(
+    private val store = DefaultXStore(
         scope = scope,
         initialState = initialState,
         reducer = reducer,

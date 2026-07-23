@@ -19,7 +19,15 @@ interface Processor<TState : Any, TAction : Any> {
     /**
      * Dispatches an Action.
      */
-    suspend fun TAction.dispatch() = actionChannel.send(this)
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("dispatchAction")
+    suspend fun dispatch(action: TAction) = actionChannel.send(action)
+
+    /**
+     * Dispatches an Action.
+     */
+    suspend fun TAction.dispatch() = dispatch(this)
+
 
     // endregion Action handling
 

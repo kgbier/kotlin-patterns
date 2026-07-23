@@ -1,5 +1,7 @@
 package dev.kgbier.patterns.xstore
 
+import kotlinx.coroutines.flow.StateFlow
+
 /**
  * An event dispatched to the Store.
  */
@@ -54,6 +56,13 @@ fun interface Thunk<TState : Any, TAction : Any> {
          * @return The current State.
          */
         suspend fun getState(): TState
+
+        /**
+         * Subscribes to the latest State.
+         *
+         * @return A [StateFlow] providing emissions of the latest State.
+         */
+        val stateFlow: StateFlow<TState>
     }
 }
 

@@ -8,8 +8,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -85,7 +87,7 @@ fun <TState : Any, TAction : Any> Flow<Dispatchable>.dispatchStateScan(
     reducer: (accumulator: TState, value: TAction) -> TState,
 ): Flow<TState> {
     // Local state to be reused for new subscribers to the same instance
-    var cachedState = initial
+    val scannedState = MutableStateFlow(initial)
 
     return channelFlow {
 
@@ -101,9 +103,8 @@ fun <TState : Any, TAction : Any> Flow<Dispatchable>.dispatchStateScan(
                 @OptIn(ExperimentalCoroutinesApi::class) newCoroutineContext(newDispatcher)
             }
 
-        // Honour standard scan behaviour and emit the initial State
-        var state: TState = cachedState
-        send(state)
+        // Honour standard scan behaviour and emit the last/initial State
+        send(scannedState.value)
 
         // Share a common Action dispatch handler
         val dispatchIntoProducer: suspend ProducerScope<TState>.(
@@ -111,16 +112,16 @@ fun <TState : Any, TAction : Any> Flow<Dispatchable>.dispatchStateScan(
         ) -> TState = { action ->
             withContext(singleParallelismContext) {
                 // Reduce the dispatched Action into a new State
-                state = reducer(state, action)
+                val newState = reducer(scannedState.value, action)
 
                 // Record the State for future subscriptions
-                cachedState = state
+                scannedState.value = newState
 
                 // Emit it downstream, can be consumed to update View State
-                send(state)
+                send(newState)
 
                 // Return it to the dispatcher
-                state
+                newState
             }
         }
 
@@ -129,7 +130,9 @@ fun <TState : Any, TAction : Any> Flow<Dispatchable>.dispatchStateScan(
                 dispatchIntoProducer(action)
 
             override suspend fun getState(): TState =
-                withContext(singleParallelismContext) { cachedState }
+                withContext(singleParallelismContext) { scannedState.value }
+
+            override val stateFlow: StateFlow<TState> = scannedState.asStateFlow()
         }
 
         collect { value ->
